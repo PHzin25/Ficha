@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha de Agente - Terror D20</title>
+    <style>
+        :root {
+            --bg: #09090b;
+            --panel: #18181b;
+            --input-bg: #27272a;
+            --text: #e4e4e7;
+            --text-muted: #a1a1aa;
+            --accent: #9d4edd;
+            --accent-glow: rgba(157, 78, 221, 0.4);
+            --border: #3f3f46;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 15px;
+            padding-bottom: 110px;
+            line-height: 1.5;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        h1 { 
+            color: var(--accent); 
+            font-size: 1.4rem; 
+            margin: 0;
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            font-weight: 800;
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Sanfona Animada */
+        details {
+            background-color: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+        }
+
+        details[open] { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+        details[open] summary { background-color: #27272a; border-bottom: 1px solid var(--accent); }
+
+        summary {
+            background-color: #18181b;
+            padding: 16px;
+            font-weight: bold;
+            color: var(--accent);
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.05rem;
+            transition: background 0.3s;
+        }
+
+        summary::-webkit-details-marker { display: none; }
+        summary::after { content: '▼'; font-size: 1rem; transition: transform 0.3s; }
+        details[open] summary::after { transform: rotate(180deg); }
+
+        .content { padding: 18px; animation: slideDown 0.3s ease-out; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; text-align: center; }
+        
+        @media (max-width: 600px) {
+            .grid-6 { grid-template-columns: repeat(3, 1fr); gap: 15px; }
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        .input-group { display: flex; flex-direction: column; margin-bottom: 10px; }
+        label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+        
+        input, textarea, select {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+            background-color: #18181b;
+        }
+
+        /* Caixa de Descrição Dinâmica */
+        .desc-box {
+            display: none;
+            background-color: rgba(157, 78, 221, 0.1);
+            border-left: 3px solid var(--accent);
+            padding: 10px;
+            margin-top: -5px;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.85rem;
+            color: #d4d4d8;
+            animation: fadeIn 0.4s;
+        }
+        .desc-box strong { color: var(--accent); }
+
+        /* Caixas de Atributos */
+        .attr-box { 
+            display: flex; flex-direction: column; align-items: center; background: var(--input-bg); 
+            border: 1px solid var(--border); border-radius: 8px; padding: 12px 8px; transition: all 0.3s;
+        }
+        .attr-box:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .attr-box label { font-size: 1rem; color: var(--accent); margin: 0; font-weight: bold; }
+        .attr-box input { 
+            text-align: center; font-size: 1.4rem; font-weight: bold; padding: 5px; 
+            margin-top: 8px; border: none; background: transparent; color: #fff; box-shadow: none;
+        }
+
+        /* Status Calculados */
+        .calc-status {
+            display: flex; justify-content: space-around; background: rgba(157, 78, 221, 0.1);
+            border: 2px solid var(--accent); border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align: center;
+        }
+        .calc-box { font-size: 0.9rem; color: var(--text-muted); font-weight: bold; }
+        .calc-box span { display: block; font-size: 1.6rem; color: var(--accent); text-shadow: 0 0 8px var(--accent-glow); }
+
+        /* Botão de Download Flutuante */
+        .btn-download {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--accent), #6a0dad); color: white;
+            border: none; padding: 16px 30px; font-size: 1.1rem; font-weight: bold;
+            border-radius: 50px; cursor: pointer; box-shadow: 0 6px 20px var(--accent-glow);
+            width: 90%; max-width: 400px; transition: all 0.3s; z-index: 100;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 var(--accent-glow); }
+            70% { box-shadow: 0 0 0 15px rgba(157, 78, 221, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(157, 78, 221, 0); }
+        }
+
+        .btn-download:hover, .btn-download:active { transform: translateX(-50%) scale(0.96); animation: none; background: linear-gradient(135deg, #7b2cbf, #4a0072); }
+        
+        .rule-text { font-size: 0.75rem; color: var(--accent); margin-top: -8px; margin-bottom: 12px; display: block; font-style: italic;}
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <h1>Terror D20</h1>
+    </div>
+
+    <!-- IDENTIDADE -->
+    <details open>
+        <summary>1. Identidade do Sobrevivente</summary>
+        <div class="content">
+            <div class="input-group"><label>Nome do Personagem</label><input type="text" id="nome" placeholder="Quem é você?"></div>
+            <div class="grid-2">
+                <div class="input-group"><label>Jogador(a)</label><input type="text" id="jogador" placeholder="Seu nome"></div>
+                <div class="input-group"><label>Idade / Ocupação</label><input type="text" id="idade_ocupacao" placeholder="Ex: 27 / Técnico"></div>
+            </div>
+            <div class="input-group"><label>Aparência / Sinais Marcantes</label><textarea id="aparencia" placeholder="Roupas, cicatrizes, olheiras..."></textarea></div>
+            <div class="input-group"><label>Personalidade</label><textarea id="personalidade" placeholder="Como ele age sob pressão?"></textarea></div>
+            <div class="input-group"><label>Histórico Breve</label><textarea id="historico" placeholder="O que ele fazia antes do colapso?"></textarea></div>
+            <div class="input-group"><label>Objetivo Pessoal / Vínculo</label><textarea id="objetivo" placeholder="Por que ele investiga? Quem ele protege?"></textarea></div>
+            <div class="input-group"><label>Medo, Segredo ou Limite</label><textarea id="medo" placeholder="O que quebra esse personagem?"></textarea></div>
+        </div>
+    </details>
+
+    <!-- ATRIBUTOS -->
+    <details>
+        <summary>2. Atributos</summary>
+        <div class="content">
+            <span class="rule-text">Distribua +3, +2, +2, +1, 0 e −1 sem repetir valores.</span>
+            <div class="grid-6">
+                <div class="attr-box"><label>FOR</label><input type="number" id="attr_for" value="0" oninput="calcularStatus()"></div>
+                <div class="attr-box"><label>AGI</label><input type="number" id="attr_agi" value="0" oninput="calcularStatus()"></div>
+                <div class="attr-box"><label>VIG</label><input type="number" id="attr_vig" value="0" oninput="calcularStatus()"></div>
+                <div class="attr-box"><label>INT</label><input type="number" id="attr_int" value="0" oninput="calcularStatus()"></div>
+                <div class="attr-box"><label>PER</label><input type="number" id="attr_per" value="0" oninput="calcularStatus()"></div>
+                <div class="attr-box"><label>VON</label><input type="number" id="attr_von" value="0" oninput="calcularStatus()"></div>
+            </div>
+        </div>
+    </details>
+
+    <!-- ORIGEM E CLASSE -->
+    <details>
+        <summary>3. Origem & Classe</summary>
+        <div class="content">
+            <div class="input-group">
+                <label>Origem</label>
+                <select id="origem" onchange="mostrarDescricao(this, 'desc_origem', dataOrigem)">
+                    <option value="">Selecione a Origem...</option>
+                    <option value="Hospital">Hospital da cidade</option>
+                    <option value="Bairro Periférico">Bairro periférico</option>
+                    <option value="Zona Rural">Zona rural</option>
+                    <option value="Centro Urbano">Centro urbano</option>
+                    <option value="Abrigo/Instituição">Abrigo/instituição</option>
+                    <option value="Família Científica">Família ligada à ciência</option>
+                    <option value="Comunidade Religiosa">Comunidade religiosa</option>
+                    <option value="Segurança/Militar">Instalação militar ou de segurança</option>
+                </select>
+            </div>
+            <div id="desc_origem" class="desc-box"></div>
+
+            <div class="input-group">
+                <label>Classe</label>
+                <select id="classe" onchange="mostrarDescricao(this, 'desc_classe', dataClasse)">
+                    <option value="">Selecione a Classe...</option>
+                    <option value="Guardião">Guardião</option>
+                    <option value="Combatente">Combatente</option>
+                    <option value="Atirador">Atirador</option>
+                    <option value="Batedor">Batedor</option>
+                    <option value="Infiltrador">Infiltrador</option>
+                    <option value="Desarmador">Desarmador</option>
+                    <option value="Investigador">Investigador</option>
+                    <option value="Médico">Médico</option>
+                    <option value="Técnico">Técnico</option>
+                    <option value="Sobrevivente">Sobrevivente</option>
+                    <option value="Socorrista">Socorrista</option>
+                    <option value="Analista">Analista</option>
+                    <option value="Psicólogo">Psicólogo</option>
+                    <option value="Ocultista">Ocultista</option>
+                    <option value="Mediador">Mediador</option>
+                    <option value="Resistente">Resistente</option>
+                    <option value="Pesquisador">Pesquisador</option>
+                    <option value="Condutor">Condutor</option>
+                </select>
+            </div>
+            <div id="desc_classe" class="desc-box"></div>
+        </div>
+    </details>
+
+    <!-- PERÍCIAS -->
+    <details>
+        <summary>4. Perícias Treinadas (+2)</summary>
+        <div class="content">
+            <span class="rule-text">Escolha 3 perícias. Elas concedem +2 nos testes correspondentes.</span>
+            <div class="input-group">
+                <select id="pericia1" onchange="mostrarDescricao(this, 'desc_pericia1', dataPericia)">
+                    <option value="">1. Selecione...</option>
+                </select>
+            </div>
+            <div id="desc_pericia1" class="desc-box"></div>
+
+            <div class="input-group">
+                <select id="pericia2" onchange="mostrarDescricao(this, 'desc_pericia2', dataPericia)">
+                    <option value="">2. Selecione...</option>
+                </select>
+            </div>
+            <div id="desc_pericia2" class="desc-box"></div>
+
+            <div class="input-group">
+                <select id="pericia3" onchange="mostrarDescricao(this, 'desc_pericia3', dataPericia)">
+                    <option value="">3. Selecione...</option>
+                </select>
+            </div>
+            <div id="desc_pericia3" class="desc-box"></div>
+
+            <div class="input-group">
+                <label>Outras Especialidades</label>
+                <input type="text" id="outras_pericias" placeholder="Ex: Direção, Computação...">
+            </div>
+        </div>
+    </details>
+
+    <!-- RECURSOS E COMBATE -->
+    <details>
+        <summary>5. Recursos & Combate</summary>
+        <div class="content">
+            <span class="rule-text">Os valores de PV, SAN e DEF são calculados automaticamente pelos atributos.</span>
+            
+            <div class="calc-status">
+                <div class="calc-box">PV Máximo<br><span id="calc_pv">12</span></div>
+                <div class="calc-box">SAN Máxima<br><span id="calc_san">14</span></div>
+                <div class="calc-box">DEFESA<br><span id="calc_def">11</span></div>
+            </div>
+
+            <div class="grid-2">
+                <div class="input-group"><label>PV Atual</label><input type="number" id="pv_atual" placeholder="Ex: 12"></div>
+                <div class="input-group"><label>SAN Atual</label><input type="number" id="san_atual" placeholder="Ex: 14"></div>
+                <div class="input-group"><label>Marcas da Morte (0-3)</label><input type="number" id="marcas" value="0" min="0" max="3"></div>
+                <div class="input-group"><label>Pressão do Grupo (0-6)</label><input type="number" id="pressao" value="0" min="0" max="6"></div>
+            </div>
+
+            <div class="input-group">
+                <label>Armas e Equipamentos (Dano / Efeito)</label>
+                <textarea id="armas" placeholder="Ex: Facão (1d6 cortante), Lanterna Tática, etc."></textarea>
+            </div>
+        </div>
+    </details>
+
+    <!-- INVENTÁRIO -->
+    <details>
+        <summary>6. Inventário (6 Espaços)</summary>
+        <div class="content">
+            <span class="rule-text">Selecione os itens. A descrição do item aparecerá abaixo.</span>
+            
+            <!-- SLOT 1 -->
+            <div class="input-group">
+                <select id="inv1" onchange="mostrarDescricao(this, 'desc_inv1', dataEquipamentos)">
+                    <option value="">1. Vazio</option>
+                    <!-- Preenchido via JS -->
+                </select>
+            </div>
+            <div id="desc_inv1" class="desc-box"></div>
+
+            <!-- SLOT 2 -->
+            <div class="input-group">
+                <select id="inv2" onchange="mostrarDescricao(this, 'desc_inv2', dataEquipamentos)">
+                    <option value="">2. Vazio</option>
+                </select>
+            </div>
+            <div id="desc_inv2" class="desc-box"></div>
+
+            <!-- SLOT 3 -->
+            <div class="input-group">
+                <select id="inv3" onchange="mostrarDescricao(this, 'desc_inv3', dataEquipamentos)">
+                    <option value="">3. Vazio</option>
+                </select>
+            </div>
+            <div id="desc_inv3" class="desc-box"></div>
+
+            <!-- SLOT 4 -->
+            <div class="input-group">
+                <select id="inv4" onchange="mostrarDescricao(this, 'desc_inv4', dataEquipamentos)">
+                    <option value="">4. Vazio</option>
+                </select>
+            </div>
+            <div id="desc_inv4" class="desc-box"></div>
+
+            <!-- SLOT 5 -->
+            <div class="input-group">
+                <select id="inv5" onchange="mostrarDescricao(this, 'desc_inv5', dataEquipamentos)">
+                    <option value="">5. Vazio</option>
+                </select>
+            </div>
+            <div id="desc_inv5" class="desc-box"></div>
+
+            <!-- SLOT 6 -->
+            <div class="input-group">
+                <select id="inv6" onchange="mostrarDescricao(this, 'desc_inv6', dataEquipamentos)">
+                    <option value="">6. Vazio</option>
+                </select>
+            </div>
+            <div id="desc_inv6" class="desc-box"></div>
+
+        </div>
+    </details>
+
+    <!-- MISTÉRIO E CICLO -->
+    <details>
+        <summary>7. Mistério & Ciclo Eterno</summary>
+        <div class="content">
+            <div class="input-group"><label>Relação com a Organização</label><textarea id="rel_org" placeholder="O que você sabe ou fez para eles?"></textarea></div>
+            <div class="input-group">
+                <label>Exposição à Substância</label>
+                <select id="exposicao">
+                    <option value="Não">Não (Nenhum sintoma)</option>
+                    <option value="Suspeita">Suspeita (Sonhos ou sinais leves)</option>
+                    <option value="Confirmada">Confirmada (Sinais físicos, entidade nota você)</option>
+                </select>
+            </div>
+            <div class="input-group"><label>Sinais Observados / Evidências</label><textarea id="evidencias" placeholder="Anote as pistas de cada sessão..."></textarea></div>
+            <div class="input-group"><label>Objeto ou Ritual-âncora</label><textarea id="ancora" placeholder="O que resiste ao reinício?"></textarea></div>
+            <div class="input-group"><label>O que lembra após o reinício?</label><textarea id="memoria_reinicio" placeholder="Memórias que você manteve..."></textarea></div>
+            <div class="input-group"><label>Objetivo Imediato</label><textarea id="objetivo_imediato" placeholder="O que precisa ser feito AGORA?"></textarea></div>
+        </div>
+    </details>
+
+    <button class="btn-download" onclick="baixarFicha()">
+        <span>📥</span> Baixar Ficha (.doc)
+    </button>
+
+    <script>
+        // --- BANCO DE DADOS DE DESCRIÇÕES ---
+        const dataOrigem = {
+            "Hospital": "<strong>Benefício:</strong> Contato médico; acesso a rotinas clínicas.<br><strong>Complicação:</strong> Alguém reconhece o personagem ou pede ajuda.",
+            "Bairro Periférico": "<strong>Benefício:</strong> Conhece atalhos e pessoas locais.<br><strong>Complicação:</strong> Um conhecido pode estar em perigo.",
+            "Zona Rural": "<strong>Benefício:</strong> Orientação em áreas naturais.<br><strong>Complicação:</strong> Desconfiança de autoridades urbanas.",
+            "Centro Urbano": "<strong>Benefício:</strong> Sabe localizar serviços e rotas.<br><strong>Complicação:</strong> Câmeras ou testemunhas podem identificá-lo.",
+            "Abrigo/Instituição": "<strong>Benefício:</strong> Rede de conhecidos e disciplina coletiva.<br><strong>Complicação:</strong> Promessa antiga ou vínculo que exige retorno.",
+            "Família Científica": "<strong>Benefício:</strong> Contato indireto com pesquisa.<br><strong>Complicação:</strong> Sobrenome ou registro chama atenção.",
+            "Comunidade Religiosa": "<strong>Benefício:</strong> Conhece práticas culturais e locais.<br><strong>Complicação:</strong> A comunidade pode ser alvo ou suspeita.",
+            "Segurança/Militar": "<strong>Benefício:</strong> Noção de protocolos e perímetro.<br><strong>Complicação:</strong> Antigos superiores podem cobrar explicações."
+        };
+
+        const dataClasse = {
+            "Guardião": "<strong>Proteger aliados:</strong> Uma vez por cena, reduz em 1d6 o dano sofrido por um aliado próximo.",
+            "Combatente": "<strong>Luta direta:</strong> Uma vez por combate, recebe +2 em um ataque corpo a corpo.",
+            "Atirador": "<strong>Ataques à distância:</strong> Uma vez por cena, pode mirar como ação simples e receber +2 no próximo ataque à distância.",
+            "Batedor": "<strong>Mobilidade:</strong> Recebe +2 no primeiro teste de Furtividade ou Rastreio de cada cena.",
+            "Infiltrador": "<strong>Furtividade:</strong> Uma vez por cena, pode repetir um teste de Furtividade, ficando com o novo resultado.",
+            "Desarmador": "<strong>Controle:</strong> Ao vencer teste oposto de Briga, pode desarmar ou afastar um inimigo humano.",
+            "Investigador": "<strong>Análise:</strong> Uma vez por cena, ao examinar uma pista, faz uma pergunta objetiva ao mestre sobre ela.",
+            "Médico": "<strong>Socorros:</strong> Uma vez por cena, ao passar em Primeiros Socorros DT 13, recupera 1d4 PV de um aliado ou estabiliza alguém.",
+            "Técnico": "<strong>Reparos:</strong> Uma vez por cena, recebe +2 em Tecnologia para reparar, desativar ou improvisar um aparelho.",
+            "Sobrevivente": "<strong>Adaptação:</strong> Uma vez por sessão, transforma um item comum plausível em recurso improvisado.",
+            "Socorrista": "<strong>Resgate:</strong> Recebe +2 ao ajudar alguém a escapar de perigo físico imediato uma vez por cena.",
+            "Analista": "<strong>Planejamento:</strong> Após 1 minuto de análise, concede +2 a um aliado no próximo teste relacionado ao plano.",
+            "Psicólogo": "<strong>Estabilidade:</strong> Uma vez por cena, ajuda um aliado e permite repetir um teste de SAN recém-falhado.",
+            "Ocultista": "<strong>Conhecimento:</strong> Uma vez por cena, pode reconhecer um símbolo ou padrão sobrenatural com teste de Ocultismo.",
+            "Mediador": "<strong>Contato:</strong> Pode tentar uma comunicação breve com um espírito não hostil usando VON ou Ocultismo.",
+            "Resistente": "<strong>Disciplina:</strong> Uma vez por sessão, recebe vantagem em um teste contra medo ou manipulação mental.",
+            "Pesquisador": "<strong>Evidências:</strong> Ao comparar 2 pistas relacionadas, recebe +2 no teste para formular uma hipótese.",
+            "Condutor": "<strong>Evacuação:</strong> Uma vez por cena, recebe +2 para conduzir o grupo por uma rota conhecida ou escapar de um bloqueio."
+        };
+
+        const dataPericia = {
+            "Atletismo (FOR)": "Correr, saltar, escalar e nadar.",
+            "Briga (FOR)": "Soco, agarrão, empurrão e luta corpo a corpo.",
+            "Força Bruta (FOR)": "Arrombar, erguer, arrastar e quebrar.",
+            "Acrobacia (AGI)": "Equilíbrio, quedas controladas e movimentos difíceis.",
+            "Furtividade (AGI)": "Esconder-se, aproximar-se sem ruído e evitar vigilância.",
+            "Pontaria (AGI)": "Mirar, disparar e arremessar com precisão.",
+            "Reflexos (AGI)": "Esquivar, reagir a armadilhas e agir rapidamente.",
+            "Resistência (VIG)": "Esforço prolongado, fadiga e condições severas.",
+            "Tolerância (VIG)": "Resistir a toxinas, doenças e efeitos corporais.",
+            "Primeiros Socorros (INT)": "Estancar sangramento e estabilizar feridos.",
+            "Investigação (INT)": "Examinar cenas, cruzar pistas e encontrar mecanismos.",
+            "Tecnologia (INT)": "Reparar aparelhos, operar sistemas e improvisar circuitos.",
+            "Conhecimento (INT)": "História, ciência, medicina teórica e cultura geral.",
+            "Ocultismo (INT)": "Símbolos, rituais, entidades e padrões sobrenaturais.",
+            "Percepção (PER)": "Sons, sombras, movimentos e detalhes discretos.",
+            "Intuição (PER)": "Notar inconsistências e interpretar comportamento.",
+            "Sobrevivência (PER)": "Orientação, abrigo, recursos e navegação em áreas hostis.",
+            "Rastreio (PER)": "Seguir pegadas, marcas e sinais deixados por criaturas.",
+            "Vontade (VON)": "Resistir à coerção, sugestão e impulsos sobrenaturais.",
+            "Sanidade (VON)": "Manter a mente diante de revelações e horrores.",
+            "Intimidação (VON)": "Pressionar por ameaça, postura ou autoridade.",
+            "Persuasão (VON)": "Negociar, inspirar confiança e convencer.",
+            "Enganação (VON)": "Mentir, disfarçar intenção e sustentar uma história falsa."
+        };
+
+        const dataEquipamentos = {
+            // Kits de Função
+            "Kit de Investigação": "Lanterna, bloco, lápis, fita métrica.",
+            "Kit de Sobrevivência": "Cantil, corda curta, isqueiro, manta térmica.",
+            "Kit de Socorro": "Ataduras, gaze, luvas, antisséptico.",
+            "Kit Técnico": "Ferramenta multiuso, fita isolante, pilhas.",
+            "Kit de Defesa": "Lanterna reforçada, objeto defensivo simples.",
+            // Itens Comuns
+            "Celular": "Comunicação, fotos; sinal pode falhar.",
+            "Lanterna": "Ilumina; exige pilhas ou recarga.",
+            "Pilhas Extras": "Reserva para lanternas e aparelhos.",
+            "Kit de Primeiros Socorros": "Estabiliza ferimentos; usos limitados.",
+            "Garrafa/Cantil": "Água; importante em jornadas longas.",
+            "Corda Curta": "Escalada simples, amarração e resgate.",
+            "Ferramenta Multiuso": "Pequenos reparos; não abre tudo.",
+            "Fita Adesiva": "Reparos improvisados e marcações.",
+            "Ração/Lanche": "Uma porção; não cura dano automaticamente.",
+            "Chave/Objeto Pessoal": "Pode servir como pista ou vínculo.",
+            "Pé-de-cabra": "Alavanca; barulhento e pouco discreto.",
+            "Câmera/Gravador": "Registra evidências, se funcionar.",
+            // Equipamentos de Captura (Imagem)
+            "Medidor EMF": "Detecta campos eletromagnéticos. Indica atividade paranormal. Níveis de 1 a 5.",
+            "Termômetro": "Mede variações de temperatura. Ajuda a identificar entidades. Variação anormal = sinal.",
+            "Câmera Fotográfica": "Registra evidências visuais. Pode capturar orbes e aparições. Use com tripé para mais clareza.",
+            "Gravador de Áudio": "Capta vozes e sons anormais. Útil para EVP (voz do além). Funciona melhor em silêncio.",
+            "Rádio Comunicador": "Comunicação entre a equipe. Pode captar vozes da entidade. Alcance limitado.",
+            "Lanterna UV": "Revela marcas, rastros e fluidos sobrenaturais. Útil para entidades que deixam pistas físicas.",
+            "Câmera Térmica": "Mostra variações de temperatura. Identifica presença de entidades. Útil para ambientes escuros.",
+            "Drone de Reconhecimento": "Mapeia o local. Detecta movimento e calor. Pode ser usado como isca.",
+            "Kit de Selagem": "Contém selos, incensos e materiais de contenção. Usado na preparação da captura. Eficaz contra algumas entidades.",
+            "Trap de Contenção": "Dispositivo de aprisionamento. Requer ativação com os sinais corretos da entidade. Funciona apenas para alguns tipos.",
+            "Analisador de Amostras": "Identifica substâncias e resíduos. Ajuda a confirmar a entidade. Útil para entidades físicas.",
+            "Equipamento de Proteção": "Máscara, proteção térmica e mental. Reduz efeitos de medo e sanidade. Essencial em capturas de alto risco.",
+            "Outro/Personalizado": "Item customizado. Descreva no campo de Armas ou anote à mão."
+        };
+
+        // --- FUNÇÕES DE INICIALIZAÇÃO ---
+        
+        // Popula as perícias
+        function popularPericias() {
+            ['pericia1', 'pericia2', 'pericia3'].forEach(id => {
+                let select = document.getElementById(id);
+                for (const [key, value] of Object.entries(dataPericia)) {
+                    let opt = document.createElement('option');
+                    opt.value = key;
+                    opt.innerText = key;
+                    select.appendChild(opt);
+                }
+            });
+        }
+
+        // Popula os Inventários
+        function popularInventario() {
+            ['inv1', 'inv2', 'inv3', 'inv4', 'inv5', 'inv6'].forEach(id => {
+                let select = document.getElementById(id);
+                
+                let optKits = document.createElement('optgroup');
+                optKits.label = "Kits de Função";
+                ["Kit de Investigação", "Kit de Sobrevivência", "Kit de Socorro", "Kit Técnico", "Kit de Defesa"].forEach(item => {
+                    let opt = document.createElement('option'); opt.value = item; opt.innerText = item; optKits.appendChild(opt);
+                });
+                select.appendChild(optKits);
+
+                let optComuns = document.createElement('optgroup');
+                optComuns.label = "Itens Comuns";
+                ["Celular", "Lanterna", "Pilhas Extras", "Kit de Primeiros Socorros", "Garrafa/Cantil", "Corda Curta", "Ferramenta Multiuso", "Fita Adesiva", "Ração/Lanche", "Chave/Objeto Pessoal", "Pé-de-cabra", "Câmera/Gravador"].forEach(item => {
+                    let opt = document.createElement('option'); opt.value = item; opt.innerText = item; optComuns.appendChild(opt);
+                });
+                select.appendChild(optComuns);
+
+                let optCaptura = document.createElement('optgroup');
+                optCaptura.label = "Equipamentos de Captura";
+                ["Medidor EMF", "Termômetro", "Câmera Fotográfica", "Gravador de Áudio", "Rádio Comunicador", "Lanterna UV", "Câmera Térmica", "Drone de Reconhecimento", "Kit de Selagem", "Trap de Contenção", "Analisador de Amostras", "Equipamento de Proteção", "Outro/Personalizado"].forEach(item => {
+                    let opt = document.createElement('option'); opt.value = item; opt.innerText = item; optCaptura.appendChild(opt);
+                });
+                select.appendChild(optCaptura);
+            });
+        }
+
+        popularPericias();
+        popularInventario();
+
+        // --- FUNÇÕES LÓGICAS ---
+
+        // Mostra a descrição dinamicamente
+        function mostrarDescricao(selectElement, descElementId, database) {
+            let val = selectElement.value;
+            let box = document.getElementById(descElementId);
+            
+            if (val && database[val]) {
+                box.innerHTML = database[val];
+                box.style.display = 'block';
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
+        // Cálculos Automáticos
+        function calcularStatus() {
+            let vig = parseInt(document.getElementById('attr_vig').value) || 0;
+            let von = parseInt(document.getElementById('attr_von').value) || 0;
+            let agi = parseInt(document.getElementById('attr_agi').value) || 0;
+
+            let pv = Math.max(6, 12 + (vig * 2));
+            let san = Math.max(6, 12 + (von * 2));
+            let def = 10 + agi;
+
+            document.getElementById('calc_pv').innerText = pv;
+            document.getElementById('calc_san').innerText = san;
+            document.getElementById('calc_def').innerText = def;
+        }
+        calcularStatus();
+
+        // Exportar para DOC
+        function baixarFicha() {
+            const getVal = (id) => document.getElementById(id).value || "—";
+            
+            const pvMax = document.getElementById('calc_pv').innerText;
+            const sanMax = document.getElementById('calc_san').innerText;
+            const def = document.getElementById('calc_def').innerText;
+
+            const pvAtual = getVal("pv_atual");
+            const sanAtual = getVal("san_atual");
+            const nome = getVal("nome");
+            const dataAtual = new Date().toLocaleDateString('pt-BR');
+
+            const parseText = (id) => getVal(id).replace(/\n/g, "<br>");
+
+            // Pega as descrições selecionadas
+            const descOrigem = document.getElementById('desc_origem').innerText || "";
+            const descClasse = document.getElementById('desc_classe').innerText || "";
+            const descP1 = document.getElementById('desc_pericia1').innerText || "";
+            const descP2 = document.getElementById('desc_pericia2').innerText || "";
+            const descP3 = document.getElementById('desc_pericia3').innerText || "";
+
+            const getInvDesc = (idSelect, idDesc) => {
+                let item = document.getElementById(idSelect).value;
+                let desc = document.getElementById(idDesc).innerText;
+                return item ? `<strong>${item}:</strong> ${desc}` : "—";
+            };
+
+            let docHtml = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <head>
+                    <meta charset='utf-8'>
+                    <title>Ficha - ${nome}</title>
+                    <style>
+                        body { font-family: 'Arial', sans-serif; color: #222; font-size: 11pt; line-height: 1.5; }
+                        h1 { color: #6a0dad; text-align: center; border-bottom: 2px solid #6a0dad; padding-bottom: 10px; font-size: 20pt; margin-bottom: 20px;}
+                        h2 { color: #6a0dad; margin-top: 25px; border-bottom: 1px solid #ddd; font-size: 14pt; padding-bottom: 5px;}
+                        .grid { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                        .grid td, .grid th { border: 1px solid #aaa; padding: 8px; text-align: center; font-weight: bold; font-size: 12pt;}
+                        .grid th { background-color: #f0e6f5; color: #6a0dad; }
+                        .text-block { margin-bottom: 15px; }
+                        .label { font-weight: bold; color: #6a0dad; text-transform: uppercase; font-size: 9pt; letter-spacing: 0.5px;}
+                        .box { border: 1px solid #ccc; padding: 10px; min-height: 20px; margin-top: 4px; background-color: #fafafa; border-radius: 4px; font-size: 11pt; }
+                        ul { margin-top: 5px; margin-bottom: 15px; padding-left: 20px;}
+                        li { margin-bottom: 8px; }
+                        .calc-area { border: 2px solid #6a0dad; padding: 10px; margin-bottom: 20px; text-align: center; background: #fdf8ff; }
+                        .small-desc { font-size: 10pt; color: #555; display: block; margin-top: 3px; font-style: italic;}
+                    </style>
+                </head>
+                <body>
+                    <h1>FICHA DE SOBREVIVENTE - TERROR D20</h1>
+                    
+                    <h2>1. Identidade</h2>
+                    <p><span class="label">Nome:</span> <span style="font-size:14pt; font-weight:bold;">${nome}</span> | <span class="label">Jogador:</span> ${getVal("jogador")} | <span class="label">Idade/Ocupação:</span> ${getVal("idade_ocupacao")}</p>
+                    <div class="text-block"><span class="label">Aparência:</span> <div class="box">${parseText("aparencia")}</div></div>
+                    <div class="text-block"><span class="label">Personalidade:</span> <div class="box">${parseText("personalidade")}</div></div>
+                    <div class="text-block"><span class="label">Histórico:</span> <div class="box">${parseText("historico")}</div></div>
+                    <div class="text-block"><span class="label">Objetivo Pessoal / Vínculo:</span> <div class="box">${parseText("objetivo")}</div></div>
+                    <div class="text-block"><span class="label">Medo, Segredo ou Limite:</span> <div class="box">${parseText("medo")}</div></div>
+
+                    <h2>2. Origem, Classe e Atributos</h2>
+                    <p><span class="label">Origem:</span> ${getVal("origem")}</p>
+                    <p class="small-desc">${descOrigem}</p>
+                    
+                    <p><span class="label">Classe:</span> ${getVal("classe")}</p>
+                    <p class="small-desc">${descClasse}</p>
+                    
+                    <table class="grid" style="margin-top: 15px;">
+                        <tr><th>FORÇA</th><th>AGILIDADE</th><th>VIGOR</th><th>INTELECTO</th><th>PERCEPÇÃO</th><th>VONTADE</th></tr>
+                        <tr>
+                            <td>${getVal("attr_for")}</td><td>${getVal("attr_agi")}</td><td>${getVal("attr_vig")}</td>
+                            <td>${getVal("attr_int")}</td><td>${getVal("attr_per")}</td><td>${getVal("attr_von")}</td>
+                        </tr>
+                    </table>
+
+                    <h2>3. Perícias Treinadas (+2)</h2>
+                    <ul>
+                        <li><strong>${getVal("pericia1")}</strong> <span class="small-desc">${descP1}</span></li>
+                        <li><strong>${getVal("pericia2")}</strong> <span class="small-desc">${descP2}</span></li>
+                        <li><strong>${getVal("pericia3")}</strong> <span class="small-desc">${descP3}</span></li>
+                    </ul>
+                    <p><span class="label">Outras Especialidades:</span> ${getVal("outras_pericias")}</p>
+
+                    <h2>4. Recursos e Combate</h2>
+                    <div class="calc-area">
+                        <span class="label">PV:</span> <span style="font-size:14pt; font-weight:bold;">${pvAtual} / ${pvMax}</span> &nbsp;&nbsp; | &nbsp;&nbsp; 
+                        <span class="label">SAN:</span> <span style="font-size:14pt; font-weight:bold;">${sanAtual} / ${sanMax}</span> &nbsp;&nbsp; | &nbsp;&nbsp; 
+                        <span class="label">DEFESA:</span> <span style="font-size:14pt; font-weight:bold;">${def}</span>
+                    </div>
+                    <p><span class="label">Movimento:</span> 9m</p>
+                    <p><span class="label">Marcas da Morte:</span> ${getVal("marcas")} | <span class="label">Pressão do Grupo:</span> ${getVal("pressao")}</p>
+                    <div class="text-block"><span class="label">Armas e Equipamentos:</span> <div class="box">${parseText("armas")}</div></div>
+
+                    <h2>5. Inventário (6 Espaços)</h2>
+                    <ul>
+                        <li>${getInvDesc("inv1", "desc_inv1")}</li>
+                        <li>${getInvDesc("inv2", "desc_inv2")}</li>
+                        <li>${getInvDesc("inv3", "desc_inv3")}</li>
+                        <li>${getInvDesc("inv4", "desc_inv4")}</li>
+                        <li>${getInvDesc("inv5", "desc_inv5")}</li>
+                        <li>${getInvDesc("inv6", "desc_inv6")}</li>
+                    </ul>
+
+                    <h2>6. Relação com o Mistério & Ciclo Eterno</h2>
+                    <div class="text-block"><span class="label">Relação com a Organização:</span> <div class="box">${parseText("rel_org")}</div></div>
+                    <p><span class="label">Exposição à Substância:</span> <strong>${getVal("exposicao")}</strong></p>
+                    <div class="text-block"><span class="label">Sinais / Evidências:</span> <div class="box">${parseText("evidencias")}</div></div>
+                    <div class="text-block"><span class="label">Objeto / Ritual-âncora:</span> <div class="box">${parseText("ancora")}</div></div>
+                    <div class="text-block"><span class="label">O que lembra após o reinício:</span> <div class="box">${parseText("memoria_reinicio")}</div></div>
+                    <div class="text-block"><span class="label">Objetivo Imediato:</span> <div class="box">${parseText("objetivo_imediato")}</div></div>
+
+                    <br><hr>
+                    <p style="text-align: center; font-size: 9pt; color: #888;">Ficha gerada em ${dataAtual} - Sistema Terror D20</p>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob(['\ufeff', docHtml], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            
+            const nomeArquivo = nome !== "—" ? `Ficha_${nome.replace(/\s+/g, '_')}.doc` : 'Ficha_TerrorD20.doc';
+            link.download = nomeArquivo;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
